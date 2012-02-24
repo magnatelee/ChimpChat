@@ -9,11 +9,7 @@ import com.android.chimpchat.core.TouchPressType;
 //import com.android.chimpchat.core.IChimpView;
 
 import java.lang.Thread;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 interface Option{
 	public void realize();
@@ -81,6 +77,8 @@ public class Monkey {
 	}
 	
 	private void getStatusReport(){
+		
+		//receving data from application
 		//code fragment refering http://www.dreamincode.net/code/snippet1917.html
 		java.net.ServerSocket serverSocket;
 		java.net.Socket socket;
@@ -108,13 +106,48 @@ public class Monkey {
 			System.out.println("Cannot read an object");
 			return;
 		}
+
+		//DEBUG PRINT : whether received information is correct or not
+		//System.out.println(mv);
 		
-		System.out.println(mv);
 		
-		Z3Config config = Z3.mk_config();
-		Z3Context context = Z3.mk_context(config);
-		Z3.del_config(config);
+		//Infer click points from view hierarchy
+		TreeSet<Integer> grids_x = new TreeSet<Integer>();
+		TreeSet<Integer> grids_y = new TreeSet<Integer>();
+		mv.collectGrid(grids_x, grids_y);
 		
+		extendGrids(grids_x);
+		extendGrids(grids_y);
+		
+		Map<MonkeyView,Pair<Integer,Integer>> map = generatePoints(mv, grids_x, grids_y);
+	}
+	
+	private static void extendGrids(TreeSet<Integer> grids){
+		TreeSet<Integer> inter_grids = new TreeSet<Integer>();
+		
+		Integer prev = new Integer(0);
+		for(Integer cur : grids){
+			if(prev == 0 || prev+1 == cur){
+				prev = cur;
+				continue;
+			}
+			inter_grids.add((prev + cur)/2);
+			prev = cur;
+		}
+		grids.addAll(inter_grids);
+		
+	}
+	
+	private static Map<MonkeyView,Pair<Integer,Integer>> generatePoints(MonkeyView mv, TreeSet<Integer> grids_x, TreeSet<Integer> grids_y){
+		TreeMap<MonkeyView,Pair<Integer,Integer>> map = new TreeMap<MonkeyView,Pair<Integer,Integer>>();
+		MonkeyView hit = null;
+		for(Integer x: grids_x){
+			for(Integer y: grids_y){
+				hit = mv.project(x,y);
+				if(hit != null) map.put(hit,new Pair(x,y));
+			}
+		}
+		return map;		
 	}
 	
 	private void decide(){

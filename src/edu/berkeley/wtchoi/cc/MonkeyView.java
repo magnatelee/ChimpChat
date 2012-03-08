@@ -90,8 +90,8 @@ public class MonkeyView implements Serializable, Comparable {
 		int my_x = px + this.x;
 		int my_y = py + this.y;
 		
-		System.out.println("!!!" + this.y);
-		System.out.println("!!!" + py);
+		//System.out.println("!!!" + this.y);
+		//System.out.println("!!!" + py);
 		
 		grids_x.add(Integer.valueOf(my_x));
 		grids_x.add(Integer.valueOf(my_x+this.width));

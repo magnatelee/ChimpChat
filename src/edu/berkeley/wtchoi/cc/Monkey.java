@@ -8,6 +8,7 @@ import com.android.chimpchat.core.PhysicalButton;
 import com.android.chimpchat.core.TouchPressType;
 //import com.android.chimpchat.core.IChimpView;
 
+import java.io.IOException;
 import java.lang.Thread;
 import java.util.*;
 
@@ -54,6 +55,9 @@ public class Monkey {
 	private static IChimpDevice mDevice;
 	private List<Option> mOptions;
 	
+	private java.io.ObjectInputStream ois;
+	private java.io.ObjectOutputStream oos;
+	
 	public Monkey(){
 		super();
 		TreeMap<String,String> options = new TreeMap<String,String>();
@@ -63,12 +67,32 @@ public class Monkey {
 	}
 	
 	private void init(){
+		//1. Initiate Chimpcat Channel with a target application
 		mOptions = new java.util.ArrayList<Option>();
 		mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
 		if( mDevice == null){
 			throw new RuntimeException("Couldn't connect.");
 		}
 		mDevice.wake();
+
+		//2. Initiate augmented channel with a target application
+		java.net.ServerSocket serverSocket;
+		java.net.Socket socket;
+
+		try{
+			serverSocket = new java.net.ServerSocket(13339,0,java.net.InetAddress.getByName("128.32.45.127"));
+			System.out.println("wait");
+			socket = serverSocket.accept();
+			System.out.println("go");
+			serverSocket.close();
+			
+			ois = new java.io.ObjectInputStream(socket.getInputStream());
+			oos = new java.io.ObjectOutputStream(socket.getOutputStream());
+		}
+		catch(java.io.IOException e){
+			System.out.println("Exception on new ServerSocket");
+			return;
+		}
 	}
 	
 	private void shutdown(){
@@ -80,27 +104,15 @@ public class Monkey {
 		
 		//receving data from application
 		//code fragment refering http://www.dreamincode.net/code/snippet1917.html
-		java.net.ServerSocket serverSocket;
-		java.net.Socket socket;
-		java.io.ObjectInputStream ois;
 		MonkeyView mv;
-		
+	
 		try{
-			serverSocket = new java.net.ServerSocket(13339,0,java.net.InetAddress.getByName("128.32.45.173"));
-			System.out.println("wait");
-			socket = serverSocket.accept();
-			System.out.println("go");
-			
-			ois = new java.io.ObjectInputStream(socket.getInputStream());
 			mv = (MonkeyView) ois.readObject();
-			
-			ois.close();
-			socket.close();
-			serverSocket.close();
 		}
-		catch(java.io.IOException e){
-			System.out.println("Exception on new ServerSocket");
-			return;
+		catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Cannot read an object");
+				return;
 		}
 		catch(java.lang.ClassNotFoundException e){
 			System.out.println("Cannot read an object");
@@ -108,7 +120,7 @@ public class Monkey {
 		}
 
 		//DEBUG PRINT : whether received information is correct or not
-		//System.out.println(mv);
+		System.out.println(mv);
 		
 		
 		//Infer click points from view hierarchy

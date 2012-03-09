@@ -47,7 +47,6 @@ class TouchOption implements Option{
 	}
 }
 
-
 public class Monkey {
 	private static final String ADB = "/Applications/Android//android-sdk-mac_x86/platform-tools/adb";
 	private static final long TIMEOUT = 5000;
@@ -57,7 +56,43 @@ public class Monkey {
 	
 	private java.io.ObjectInputStream ois;
 	private java.io.ObjectOutputStream oos;
-	
+
+    private boolean cmd_sent = false;
+
+    class ChannelInitiator extends Thread{
+        private Monkey mMonkey;
+        private boolean result = false;
+
+        ChannelInitiator(Monkey m){
+            mMonkey = m;
+        }
+
+        public void run(){
+            //Initiate augmented channel with a target application
+            java.net.ServerSocket serverSocket;
+            java.net.Socket socket;
+
+            try{
+                serverSocket = new java.net.ServerSocket(13339);
+                System.out.println("wait");
+                socket = serverSocket.accept();
+                System.out.println("go");
+                serverSocket.close();
+
+                mMonkey.ois = new java.io.ObjectInputStream(socket.getInputStream());
+                mMonkey.oos = new java.io.ObjectOutputStream(socket.getOutputStream());
+                result = true;
+            }
+            catch(java.io.IOException e){
+                System.out.println("Exception on new ServerSocket");
+            }
+        }
+
+        public boolean getResult(){
+            return result;
+        }
+    }
+
 	public Monkey(){
 		super();
 		TreeMap<String,String> options = new TreeMap<String,String>();
@@ -65,9 +100,14 @@ public class Monkey {
 		options.put("adbLocation",ADB);
 		mChimpchat = ChimpChat.getInstance(options);
 	}
-	
+
+    // Initiate application, connect chip, connect channel
 	private void init(){
-		//1. Initiate Chimpcat Channel with a target application
+        //1. Initiate Communication Channel (Asynchronous)
+        ChannelInitiator initiator = new ChannelInitiator(this);
+        initiator.start();
+
+		//2. Initiate Chimpcat Channel with a target device
 		mOptions = new java.util.ArrayList<Option>();
 		mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
 		if( mDevice == null){
@@ -75,26 +115,26 @@ public class Monkey {
 		}
 		mDevice.wake();
 
-		//2. Initiate augmented channel with a target application
-		java.net.ServerSocket serverSocket;
-		java.net.Socket socket;
+        //3. Invoke target application
+        String appPackage = "com.android.demo.notepad3";
+        String activity = "com.android.demo.notepad3.Notepadv3";
+        String runComponent = appPackage + '/' + activity;
+        Collection<String> coll = new LinkedList<String>();
+        Map<String,Object> extras = new HashMap<String,Object>();
+        mDevice.startActivity(null, null, null, null, coll, extras, runComponent, 0);
 
-		try{
-			serverSocket = new java.net.ServerSocket(13339,0,java.net.InetAddress.getByName("128.32.45.127"));
-			System.out.println("wait");
-			socket = serverSocket.accept();
-			System.out.println("go");
-			serverSocket.close();
-			
-			ois = new java.io.ObjectInputStream(socket.getInputStream());
-			oos = new java.io.ObjectOutputStream(socket.getOutputStream());
-		}
-		catch(java.io.IOException e){
-			System.out.println("Exception on new ServerSocket");
-			return;
-		}
+		//4. Wait for communication channel initiation
+        try{
+            initiator.join();
+            if(!initiator.getResult()){
+                throw new RuntimeException("Communication channel cannot be initiated");
+            }
+        }
+        catch(InterruptedException e){
+            throw new RuntimeException("Communication initiator interrupted");
+        }
 	}
-	
+
 	private void shutdown(){
 		mChimpchat.shutdown();
 		mDevice = null;
@@ -132,12 +172,13 @@ public class Monkey {
 		extendGrids(grids_y);
 		
 		Map<MonkeyView,Pair<Integer,Integer>> map = generatePoints(mv, grids_x, grids_y);
+
 	}
 	
 	private static void extendGrids(TreeSet<Integer> grids){
 		TreeSet<Integer> inter_grids = new TreeSet<Integer>();
 		
-		Integer prev = new Integer(0);
+		Integer prev = 0;
 		for(Integer cur : grids){
 			if(prev == 0 || prev+1 == cur){
 				prev = cur;
@@ -152,11 +193,11 @@ public class Monkey {
 	
 	private static Map<MonkeyView,Pair<Integer,Integer>> generatePoints(MonkeyView mv, TreeSet<Integer> grids_x, TreeSet<Integer> grids_y){
 		TreeMap<MonkeyView,Pair<Integer,Integer>> map = new TreeMap<MonkeyView,Pair<Integer,Integer>>();
-		MonkeyView hit = null;
+		MonkeyView hit;
 		for(Integer x: grids_x){
 			for(Integer y: grids_y){
 				hit = mv.project(x,y);
-				if(hit != null) map.put(hit,new Pair(x,y));
+				if(hit != null) map.put(hit,new Pair<Integer,Integer>(x,y));
 			}
 		}
 		return map;		
@@ -170,21 +211,28 @@ public class Monkey {
 			java.util.Random rand = new java.util.Random();
 			int decision = rand.nextInt(mOptions.size());
 			mOptions.get(decision).realize();
+            cmd_sent = true;
 		}
 	}
+
+    private void ack(){
+        if(!cmd_sent) return;
+
+        try{
+            oos.writeObject(AckPacket.generate());
+        }
+        catch(IOException e){
+            throw new RuntimeException("Cannot send ack");
+        }
+    }
 	
 	private void go(){
-		String appPackage = "com.android.demo.notepad3";
-		String activity = "com.android.demo.notepad3.Notepadv3";
-		String runComponent = appPackage + '/' + activity;
-		Collection<String> coll = new LinkedList<String>();
-		Map<String,Object> extras = new HashMap<String,Object>();
-		mDevice.startActivity(null, null, null, null, coll, extras, runComponent, 0);
 		try{ 
 			Thread.sleep(1000);
 			while(true){
 				getStatusReport();
 				decide();
+                ack();
 				Thread.sleep(1000);
 				
 				/*System.out.println("Iterate!");

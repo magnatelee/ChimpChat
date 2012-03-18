@@ -6,3 +6,5 @@ chimpchat.jar
 ddmlib.jar
 guavalib.jar
 sdkilb.jar
+
+All four files can be found in "<ANDROID_SDK>/tools/lib" directory.

@@ -6,6 +6,7 @@ import com.android.chimpchat.ChimpChat;
 import com.android.chimpchat.core.IChimpDevice;
 import com.android.chimpchat.core.PhysicalButton;
 import com.android.chimpchat.core.TouchPressType;
+import com.google.common.collect.ForwardingSortedMap;
 //import com.android.chimpchat.core.IChimpView;
 
 import java.io.IOException;
@@ -33,12 +34,12 @@ class TouchOption implements Option{
 	TouchOption(){
 		/* XXX */
 	}
-	
+
 	private void findPoint(int point[]){
 		point[0] = 10;
 		point[1] = 10; /* XXX */
 	}
-	
+
 	public void realize(){
 		int point[] = new int[2];
 		findPoint(point);
@@ -142,8 +143,8 @@ public class Monkey {
 	
 	private void getStatusReport(){
 		
-		//receving data from application
-		//code fragment refering http://www.dreamincode.net/code/snippet1917.html
+		//receiving data from application
+		//code fragment referring http://www.dreamincode.net/code/snippet1917.html
 		MonkeyView mv;
 	
 		try{
@@ -258,3 +259,31 @@ public class Monkey {
 	
 	public static IChimpDevice getDevice(){ return mDevice; }
 }
+
+
+/*
+// L* Learning Algorithm
+class Learner{
+    private StateMachine mTargetMachine;
+    private Oracle mOracle;
+    
+    public Learner(StateMachine target, Oracle oracle){
+        mTargetMachine = target;
+        mOracle = oracle;
+    }
+    
+    public void start(){
+        while(true){
+            while(true){
+                fill();
+                if(mHypothesis.isStable()) break;
+
+
+            }
+            if(mOracle.equal(mTargetMachine,mHypothesis))
+                break;
+            
+            mHypothesis.extend(mOracle.getCounterExample());
+        }
+    }
+}*/

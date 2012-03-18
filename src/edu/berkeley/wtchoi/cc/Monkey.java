@@ -1,15 +1,14 @@
 package edu.berkeley.wtchoi.cc;
 
+import java.io.*;
 import java.util.TreeMap;
 
 import com.android.chimpchat.ChimpChat;
 import com.android.chimpchat.core.IChimpDevice;
 import com.android.chimpchat.core.PhysicalButton;
 import com.android.chimpchat.core.TouchPressType;
-import com.google.common.collect.ForwardingSortedMap;
 //import com.android.chimpchat.core.IChimpView;
 
-import java.io.IOException;
 import java.lang.Thread;
 import java.util.*;
 
@@ -142,27 +141,8 @@ public class Monkey {
 	}
 	
 	private void getStatusReport(){
-		
 		//receiving data from application
-		//code fragment referring http://www.dreamincode.net/code/snippet1917.html
-		MonkeyView mv;
-	
-		try{
-			mv = (MonkeyView) ois.readObject();
-		}
-		catch (IOException e) {
-				e.printStackTrace();
-				System.out.println("Cannot read an object");
-				return;
-		}
-		catch(java.lang.ClassNotFoundException e){
-			System.out.println("Cannot read an object");
-			return;
-		}
-
-		//DEBUG PRINT : whether received information is correct or not
-		System.out.println(mv);
-		
+		MonkeyView mv = getMonkeyViewReport();
 		
 		//Infer click points from view hierarchy
 		TreeSet<Integer> grids_x = new TreeSet<Integer>();
@@ -175,7 +155,38 @@ public class Monkey {
 		Map<MonkeyView,Pair<Integer,Integer>> map = generatePoints(mv, grids_x, grids_y);
 
 	}
-	
+    
+    private ViewState getViewStateReport(){
+        MonkeyView mv = getMonkeyViewReport();
+        return null; // TODO
+    }
+
+    private MonkeyView getMonkeyViewReport(){
+
+        //receiving data from application
+        //code fragment referring http://www.dreamincode.net/code/snippet1917.html
+        MonkeyView mv;
+
+        try{
+            mv = (MonkeyView) ois.readObject();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Cannot read an object");
+            return null;
+        }
+        catch(java.lang.ClassNotFoundException e){
+            System.out.println("Cannot read an object");
+            return null;
+        }
+
+        //DEBUG PRINT : whether received information is correct or not
+        System.out.println(mv);
+
+        return mv;
+    }
+    
+     
 	private static void extendGrids(TreeSet<Integer> grids){
 		TreeSet<Integer> inter_grids = new TreeSet<Integer>();
 		
@@ -216,74 +227,114 @@ public class Monkey {
 		}
 	}
 
+    private void reset(){
+        try{
+            oos.writeObject(Packet.getReset());
+        }
+        catch(IOException e){
+            throw new RuntimeException("Cannot send reset");
+        }
+    }
+    
     private void ack(){
         if(!cmd_sent) return;
 
         try{
-            oos.writeObject(AckPacket.generate());
+            oos.writeObject(Packet.getAck());
         }
         catch(IOException e){
             throw new RuntimeException("Cannot send ack");
         }
     }
-	
-	private void go(){
+
+    private void touch(Touch t){ //TODO
+        mDevice.touch(0,0,TouchPressType.DOWN_AND_UP);
+    }
+    
+    //Application Control Loop
+	private List<ViewState> go(List<Touch> touchlist){
+        List<ViewState> statelist = new Vector<ViewState>(touchlist.size());
 		try{ 
+            reset();
+            ack();
 			Thread.sleep(1000);
-			while(true){
-				getStatusReport();
-				decide();
+            ViewState state = getViewStateReport();
+            
+			for(Touch t: touchlist){
+				touch(t);
                 ack();
 				Thread.sleep(1000);
-				
-				/*System.out.println("Iterate!");
-				
-				System.out.println("progress");
-				for(IChimpView c : root.getChildren()){
-					System.out.println(c.getLocation().getHeight());
-				}
-				mDevice.press(PhysicalButton.MENU, TouchPressType.DOWN_AND_UP);
-				Thread.sleep(1000);*/
+                state = getViewStateReport();
+                statelist.add(state);
 			}
 		}
 		catch(Exception e){}
+        return statelist;
 	}
 	
-	
+	//Main Loop with learning
 	public static void main(String[] args){
 		final Monkey monkey = new Monkey();
 		monkey.init();
-		monkey.go();
+        
+        LStarLearner<Touch,ViewState,ModelInstance> learner = null;    //TODO
+        Oracle<Touch,ViewState,ModelInstance> oracle = null;           //TODO
+
+        //Learning Loop
+        while(true){
+            Iterable<List<Touch>> questions = learner.getQuestions();
+            for(List<Touch> question : questions){
+                List<ViewState> answer = monkey.go(question);
+                learner.learn(question, answer);
+            }
+            if(!learner.learnedHypothesis()){
+                throw new RuntimeException("Somethings wrong with learner");
+            }
+
+            oracle.setModel(learner.getModel());
+            if(oracle.isModelCorrect()) 
+                break;
+            
+            Pair<List<Touch>,List<ViewState>> counterexample = oracle.getCounterexample();
+            learner.learnCounterexample(counterexample);
+        }
+        Model m = learner.getModel();
+        m.printModel(new BufferedWriter(new OutputStreamWriter(System.out)));
+
 		monkey.shutdown();
 	}
-	
+    
 	public static IChimpDevice getDevice(){ return mDevice; }
 }
 
+class Touch{}         //TODO
+class ViewState{}     //TODO
+class ModelInstance implements Model{ //TODO
+    public void printModel(Writer w){}
+} 
 
-/*
-// L* Learning Algorithm
-class Learner{
-    private StateMachine mTargetMachine;
-    private Oracle mOracle;
+interface Model{
+    public void printModel(Writer w);
+}
+
+interface Oracle<I, O, M extends Model>{
+    public void setModel(M model);
+    public boolean isModelCorrect();
+    public Pair<List<I>,List<O>> getCounterexample();
+}
+
+interface LStarLearner<I,O, M extends Model>{
+    class ConflictingExample extends Exception{}    
+    class UnresolvableExampleException extends Exception{}
     
-    public Learner(StateMachine target, Oracle oracle){
-        mTargetMachine = target;
-        mOracle = oracle;
-    }
+    public boolean learnedHypothesis();
+    public Iterable<List<I>> getQuestions();
     
-    public void start(){
-        while(true){
-            while(true){
-                fill();
-                if(mHypothesis.isStable()) break;
+    public void learn(List<I> i, List<O> o);
+    public void learnCounterexample(Pair<List<I>, List<O>> ce);
+    
+    public List<O> calculateTransition(List<I> i);
 
+    public M getModel();
+}
 
-            }
-            if(mOracle.equal(mTargetMachine,mHypothesis))
-                break;
-            
-            mHypothesis.extend(mOracle.getCounterExample());
-        }
-    }
-}*/

@@ -2,7 +2,7 @@ package edu.berkeley.wtchoi.cc;
 
 public class Packet {
     
-    enum PacketType{
+    public enum PacketType{
         Ack, Reset;
     }
     

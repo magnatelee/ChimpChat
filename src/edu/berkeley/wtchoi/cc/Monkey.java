@@ -102,20 +102,22 @@ public class Monkey {
 	}
 
     // Initiate application, connect chip, connect channel
-	private void init(){
-        //1. Initiate Communication Channel (Asynchronous)
-        ChannelInitiator initiator = new ChannelInitiator(this);
-        initiator.start();
-
-		//2. Initiate Chimpcat Channel with a target device
+	private void connectToDevice(){
+		//1. Initiate Chimpcat Channel with a target device
 		mOptions = new java.util.ArrayList<Option>();
 		mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
 		if( mDevice == null){
 			throw new RuntimeException("Couldn't connect.");
 		}
 		mDevice.wake();
+	}
 
-        //3. Invoke target application
+    private void initiateApp(){
+        //1. Initiate Communication Channel (Asynchronous)
+        ChannelInitiator initiator = new ChannelInitiator(this);
+        initiator.start();
+
+        //2. Invoke target application
         String appPackage = "com.android.demo.notepad3";
         String activity = "com.android.demo.notepad3.Notepadv3";
         String runComponent = appPackage + '/' + activity;
@@ -123,7 +125,7 @@ public class Monkey {
         Map<String,Object> extras = new HashMap<String,Object>();
         mDevice.startActivity(null, null, null, null, coll, extras, runComponent, 0);
 
-		//4. Wait for communication channel initiation
+        //3. Wait for communication channel initiation
         try{
             initiator.join();
             if(!initiator.getResult()){
@@ -133,7 +135,11 @@ public class Monkey {
         catch(InterruptedException e){
             throw new RuntimeException("Communication initiator interrupted");
         }
-	}
+
+        //NOTE: At this moment, we expect application to erase all user data when ever it starts.
+        //Therefore, our protocol doesn't have anythings about resetting application data.
+        //However, we may need more complex protocol to fine control an application.
+    }
 
 	private void shutdown(){
 		mChimpchat.shutdown();
@@ -254,16 +260,13 @@ public class Monkey {
     //Application Control Loop
 	private List<ViewState> go(List<Touch> touchlist){
         List<ViewState> statelist = new Vector<ViewState>(touchlist.size());
-		try{ 
-            reset(); //TODO: reset is not considered in current protocol. have to extend it.
-            ack();
-			Thread.sleep(1000);
+		try{
+            this.initiateApp();
             ViewState state = getViewStateReport();
             
 			for(Touch t: touchlist){
 				touch(t);
                 ack();
-				Thread.sleep(1000);
                 state = getViewStateReport();
                 statelist.add(state);
 			}
@@ -275,7 +278,7 @@ public class Monkey {
 	//Main Loop with learning
 	public static void main(String[] args){
 		final Monkey monkey = new Monkey();
-		monkey.init();
+		monkey.connectToDevice();
         
         LStarLearner<Touch,ViewState,ModelInstance> learner = null;    //TODO
         Oracle<Touch,ViewState,ModelInstance> oracle = null;           //TODO

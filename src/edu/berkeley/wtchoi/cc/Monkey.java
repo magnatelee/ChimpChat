@@ -255,7 +255,7 @@ public class Monkey {
 	private List<ViewState> go(List<Touch> touchlist){
         List<ViewState> statelist = new Vector<ViewState>(touchlist.size());
 		try{ 
-            reset();
+            reset(); //TODO: reset is not considered in current protocol. have to extend it.
             ack();
 			Thread.sleep(1000);
             ViewState state = getViewStateReport();

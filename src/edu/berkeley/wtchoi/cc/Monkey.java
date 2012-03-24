@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.TreeMap;
 
 import com.android.chimpchat.ChimpChat;
+import com.android.chimpchat.adb.CommandOutputCapture;
 import com.android.chimpchat.core.IChimpDevice;
 import com.android.chimpchat.core.PhysicalButton;
 import com.android.chimpchat.core.TouchPressType;
@@ -22,7 +23,7 @@ enum KeyOption implements Option{
 	public void realize(){
 		switch (this){
 		case MENU:
-			Monkey.getDevice().press(PhysicalButton.MENU, TouchPressType.DOWN_AND_UP);
+			MonkeyControlImp.getDevice().press(PhysicalButton.MENU, TouchPressType.DOWN_AND_UP);
 			System.out.println("Press Menu");
 			break;
 		}
@@ -42,12 +43,31 @@ class TouchOption implements Option{
 	public void realize(){
 		int point[] = new int[2];
 		findPoint(point);
-		Monkey.getDevice().touch(point[0], point[1] , TouchPressType.DOWN_AND_UP);
+		MonkeyControlImp.getDevice().touch(point[0], point[1] , TouchPressType.DOWN_AND_UP);
 		System.out.println("Touch");
 	}
 }
 
-public class Monkey {
+public class Monkey{
+    public void main(String args){
+        return;
+    }
+}
+
+interface MonkeyControl {
+    public boolean connectToDevice();
+    public boolean initiateApp();
+    
+    //public boolean resetData();
+
+    public boolean restartApp();
+    public boolean go(List<Command>);
+    public MonkeyView getView();
+
+    public void shutdown();
+}
+
+class MonkeyControlImp implements MonkeyControl{
 	private static final String ADB = "/Applications/Android//android-sdk-mac_x86/platform-tools/adb";
 	private static final long TIMEOUT = 5000;
 	private ChimpChat mChimpchat;
@@ -60,10 +80,10 @@ public class Monkey {
     private boolean cmd_sent = false;
 
     class ChannelInitiator extends Thread{
-        private Monkey mMonkey;
+        private MonkeyControlImp mMonkey;
         private boolean result = false;
 
-        ChannelInitiator(Monkey m){
+        ChannelInitiator(MonkeyControlImp m){
             mMonkey = m;
         }
 
@@ -93,7 +113,7 @@ public class Monkey {
         }
     }
 
-	public Monkey(){
+	public MonkeyControlImp(){
 		super();
 		TreeMap<String,String> options = new TreeMap<String,String>();
 		options.put("backend","adb");
@@ -102,17 +122,19 @@ public class Monkey {
 	}
 
     // Initiate application, connect chip, connect channel
-	private void connectToDevice(){
+	public boolean connectToDevice(){
 		//1. Initiate Chimpcat Channel with a target device
 		mOptions = new java.util.ArrayList<Option>();
 		mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
 		if( mDevice == null){
-			throw new RuntimeException("Couldn't connect.");
+			//throw new RuntimeException("Couldn't connect.");
+            return false;
 		}
 		mDevice.wake();
+        return true;
 	}
 
-    private void initiateApp(){
+    public boolean initiateApp(){
         //1. Initiate Communication Channel (Asynchronous)
         ChannelInitiator initiator = new ChannelInitiator(this);
         initiator.start();
@@ -129,24 +151,32 @@ public class Monkey {
         try{
             initiator.join();
             if(!initiator.getResult()){
-                throw new RuntimeException("Communication channel cannot be initiated");
+                //throw new RuntimeException("Communication channel cannot be initiated");
+                return false;
             }
         }
         catch(InterruptedException e){
-            throw new RuntimeException("Communication initiator interrupted");
+            //throw new RuntimeException("Communication initiator interrupted");
+            return false;
         }
 
         //NOTE: At this moment, we expect application to erase all user data when ever it starts.
         //Therefore, our protocol doesn't have anythings about resetting application data.
         //However, we may need more complex protocol to fine control an application.
     }
+    
+    public boolean restartApp(){
+        return initiateApp();
+        //TODO: redesign protocol to include separate restart packet!
+    }
+}
 
-	private void shutdown(){
+	public void shutdown(){
 		mChimpchat.shutdown();
 		mDevice = null;
 	}
-	
-	private void getStatusReport(){
+
+    private void getStatusReport(){
 		//receiving data from application
 		MonkeyView mv = getMonkeyViewReport();
 		
@@ -159,15 +189,9 @@ public class Monkey {
 		extendGrids(grids_y);
 		
 		Map<MonkeyView,Pair<Integer,Integer>> map = generatePoints(mv, grids_x, grids_y);
-
 	}
-    
-    private ViewState getViewStateReport(){
-        MonkeyView mv = getMonkeyViewReport();
-        return null; // TODO
-    }
 
-    private MonkeyView getMonkeyViewReport(){
+    public MonkeyView getView(){
 
         //receiving data from application
         //code fragment referring http://www.dreamincode.net/code/snippet1917.html
@@ -220,27 +244,6 @@ public class Monkey {
 		}
 		return map;		
 	}
-	
-	private void decide(){
-		if(mOptions.isEmpty()){
-			System.out.println("No Options!");
-		}
-		else{
-			java.util.Random rand = new java.util.Random();
-			int decision = rand.nextInt(mOptions.size());
-			mOptions.get(decision).realize();
-            cmd_sent = true;
-		}
-	}
-
-    private void reset(){
-        try{
-            oos.writeObject(Packet.getReset());
-        }
-        catch(IOException e){
-            throw new RuntimeException("Cannot send reset");
-        }
-    }
     
     private void ack(){
         if(!cmd_sent) return;
@@ -256,9 +259,11 @@ public class Monkey {
     private void touch(Touch t){ //TODO
         mDevice.touch(0,0,TouchPressType.DOWN_AND_UP);
     }
-    
+
+
+    //TOTAL reimplementation is required!
     //Application Control Loop
-	private List<ViewState> go(List<Touch> touchlist){
+	private List<ViewState> go(List<Command> command){
         List<ViewState> statelist = new Vector<ViewState>(touchlist.size());
 		try{
             this.initiateApp();
@@ -273,71 +278,38 @@ public class Monkey {
 		}
 		catch(Exception e){}
         return statelist;
-	}
-	
-	//Main Loop with learning
-	public static void main(String[] args){
-		final Monkey monkey = new Monkey();
-		monkey.connectToDevice();
-        
-        LStarLearner<Touch,ViewState,ModelInstance> learner = null;    //TODO
-        Oracle<Touch,ViewState,ModelInstance> oracle = null;           //TODO
-
-        //Learning Loop
-        while(true){
-            Iterable<List<Touch>> questions = learner.getQuestions();
-            for(List<Touch> question : questions){
-                List<ViewState> answer = monkey.go(question);
-                learner.learn(question, answer);
-            }
-            if(!learner.learnedHypothesis()){
-                throw new RuntimeException("Somethings wrong with learner");
-            }
-
-            oracle.setModel(learner.getModel());
-            if(oracle.isModelCorrect()) 
-                break;
-            
-            Pair<List<Touch>,List<ViewState>> counterexample = oracle.getCounterexample();
-            learner.learnCounterexample(counterexample);
-        }
-        Model m = learner.getModel();
-        m.printModel(new BufferedWriter(new OutputStreamWriter(System.out)));
-
-		monkey.shutdown();
-	}
     
 	public static IChimpDevice getDevice(){ return mDevice; }
 }
 
-class Touch{}         //TODO
-class ViewState{}     //TODO
+//Concrete Touch Position. We are going to use this as an input character 
+class Touch extends Alphabet{//TODO
+    public int compareTo(Alphabet target){
+        if(target instanceof Touch){
+            return 0; // TODO
+        }
+        else{
+            throw new RuntimeException("Type Error!");
+        }
+    }
+}   
+
+//View State Information. We are going to use it as output character
+class ViewState extends Alphabet{//TODO
+    public int compareTo(Alphabet target){
+        if(target instanceof ViewState){
+            return 0; //TODO
+        }
+        else{
+            throw new RuntimeException("Type Error");
+        }
+    }
+}
+
 class ModelInstance implements Model{ //TODO
     public void printModel(Writer w){}
-} 
+}
 
-interface Model{
+interface Model<I extends Alphabet, O extends Alphabet>{
     public void printModel(Writer w);
 }
-
-interface Oracle<I, O, M extends Model>{
-    public void setModel(M model);
-    public boolean isModelCorrect();
-    public Pair<List<I>,List<O>> getCounterexample();
-}
-
-interface LStarLearner<I,O, M extends Model>{
-    class ConflictingExample extends Exception{}    
-    class UnresolvableExampleException extends Exception{}
-    
-    public boolean learnedHypothesis();
-    public Iterable<List<I>> getQuestions();
-    
-    public void learn(List<I> i, List<O> o);
-    public void learnCounterexample(Pair<List<I>, List<O>> ce);
-    
-    public List<O> calculateTransition(List<I> i);
-
-    public M getModel();
-}
-

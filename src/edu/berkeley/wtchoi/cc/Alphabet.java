@@ -7,5 +7,5 @@ package edu.berkeley.wtchoi.cc;
  * Time: 3:57 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class Alphabet implements Comparable<Alphabet>{
+public interface Alphabet extends Comparable<Alphabet>{
 }

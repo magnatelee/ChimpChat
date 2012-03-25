@@ -9,14 +9,14 @@ import java.util.List;
  * Time: 4:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface Learner<I extends Alphabet, O extends Alphabet, LI extends List<I>, LO extends List<O>, M extends Model<I,O>>{
+public interface Learner<I extends Alphabet, O extends Alphabet,  M extends Model<I,O>>{
     public boolean learnedHypothesis();
-    public LI getQuestion();
+    public List<I> getQuestion();
 
-    public void learn(LI i, LO o);
-    public void learnCounterExample(Pair<LI, LO> ce);
+    public void learn(List<I> i, List<O> o);
+    public void learnCounterExample(Pair<List<I>, List<O>> ce);
 
-    public LO calculateTransition(LI i);
+    public List<O> calculateTransition(List<I> i);
 
     public M getModel();
 }

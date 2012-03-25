@@ -10,14 +10,14 @@ import java.util.List;
  * Time: 3:58 PM
  * To change this template use File | Settings | File Templates.
  */
-interface Teacher<I extends Alphabet, O extends Alphabet, LI extends List<I>, LO extends List<O>, M extends Model<I,O>>{
+interface Teacher<I extends Alphabet, O extends Alphabet, M extends Model<I,O>>{
     // Used to implement equivalence query.
     // Should return null if model and target are equivalent
-    public Pair<LI,LO> getCounterExample(M model);
-    public LO checkMembership(LI input);
+    public Pair<List<I>,List<O>> getCounterExample(M model);
+    public List<O> checkMembership(List<I> input);
 }
 
-interface TeacherP<I extends Alphabet, O extends Alphabet, L extends List, LI extends List<I>, LO extends List<O>, M extends Model<I,O>> extends Teacher{
-    public Collection<I> getPalette(LI input);
+interface TeacherP<I extends Alphabet, O extends Alphabet, M extends Model<I,O>> extends Teacher<I,O,M>{
+    public Collection<I> getPalette(List<I> input);
 }
 

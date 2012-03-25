@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.Collection;
 import java.util.Set;
 import java.io.BufferedWriter;
+import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 public class MonkeyView implements Serializable, Comparable {
@@ -79,10 +82,26 @@ public class MonkeyView implements Serializable, Comparable {
 		}
 		return;
 	}
+
+
+    //Function to collect representative click positions for each equivalence class
+    public <T> Collection<T> getRepresentativePoints(PointFactory<T> factory){
+        //Infer click points from view hierarchy
+        TreeSet<Integer> grids_x = new TreeSet<Integer>();
+        TreeSet<Integer> grids_y = new TreeSet<Integer>();
+        this.collectGrid(grids_x, grids_y);
+
+        extendGrids(grids_x);
+        extendGrids(grids_y);
+
+        return generatePoints(grids_x, grids_y, factory).values();
+    }
+    
+    public Collection<Pair<Integer,Integer>> getRepresentativePoints(){
+        return getRepresentativePoints(null);
+    }
 	
-	
-	
-	public void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y){
+	private void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y){
 		collectGrid(grids_x,grids_y,0,0);
 	}
 	
@@ -140,14 +159,42 @@ public class MonkeyView implements Serializable, Comparable {
 		//Thus return my self.
 		return this;
 	}
-	
-	@SuppressWarnings("unchecked")
-	LinkedList<MonkeyView> getChildren(){
-		return (LinkedList<MonkeyView>)children.clone();
-	}
 
-	@Override
-	public int compareTo(Object o) {
-		return this.toString().compareTo(o.toString());
-	}
+    private static void extendGrids(TreeSet<Integer> grids){
+        TreeSet<Integer> inter_grids = new TreeSet<Integer>();
+
+        Integer prev = 0;
+        for(Integer cur : grids){
+            if(prev == 0 || prev+1 == cur){
+                prev = cur;
+                continue;
+            }
+            inter_grids.add((prev + cur)/2);
+            prev = cur;
+        }
+        grids.addAll(inter_grids);
+
+    }
+
+    private <T> Map<MonkeyView,T> generatePoints(TreeSet<Integer> grids_x, TreeSet<Integer> grids_y, PointFactory<T> factory){
+        TreeMap<MonkeyView,T> map = new TreeMap<MonkeyView,T>();
+        MonkeyView hit;
+        for(Integer x: grids_x){
+            for(Integer y: grids_y){
+                hit = this.project(x,y);
+                if(hit != null) map.put(hit,factory.get(x,y));
+            }
+        }
+        return map;
+    }
+
+    @SuppressWarnings("unchecked")
+    LinkedList<MonkeyView> getChildren(){
+        return (LinkedList<MonkeyView>)children.clone();
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return this.toString().compareTo(o.toString());
+    }
 }

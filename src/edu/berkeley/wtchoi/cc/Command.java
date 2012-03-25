@@ -1,7 +1,5 @@
 package edu.berkeley.wtchoi.cc;
 
-import android.view.SurfaceHolder;
-import com.android.chimpchat.ChimpChat;
 import com.android.chimpchat.core.IChimpDevice;
 import com.android.chimpchat.core.TouchPressType;
 
@@ -18,23 +16,16 @@ public interface Command{
 
 
 //Concrete Touch Position. We are going to use this as an input character
-class Touch implements Command, Alphabet{//TODO
+class Touch implements Command, Comparable<Touch> {//TODO
     private Integer x;
     private Integer y;
 
-    public int compareTo(Alphabet target){
-        if(target instanceof Touch){
-            Touch t = (Touch)target;
-            
-            int c1 = x.compareTo(t.getX());
-            if(c1 == 0){
-                return y.compareTo(t.getY());
-            }
-            return c1;
+    public int compareTo(Touch target){
+        int c1 = x.compareTo(target.x);
+        if(c1 == 0){
+            return y.compareTo(target.y);
         }
-        else{
-            throw new RuntimeException("Type Error!");
-        }
+        return c1;
     }
 
     public Touch(Integer x, Integer y){

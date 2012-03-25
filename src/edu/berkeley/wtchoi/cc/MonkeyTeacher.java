@@ -1,9 +1,7 @@
 package edu.berkeley.wtchoi.cc;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.TreeMap;
-import java.util.Vector;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,46 +13,56 @@ import java.util.Vector;
 
 public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel>{
 
-    private MonkeyControl controler;
-    private TreeMap<List<Touch>,Collection<Touch>> paletteTable;
+    private MonkeyControl controller;
+    private TreeMap<CList<Touch>,CSet<Touch>> paletteTable;
     
     private PointFactory<Touch> pointFactory;
 
     public MonkeyTeacher(MonkeyControl imp){
-        controler = imp;
+        controller = imp;
         pointFactory = TouchFactory.getInstance();
     }
 
-    public Pair<List<Touch>,List<ViewState>> getCounterExample(AppModel model) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Pair<CList<Touch>,CList<ViewState>> getCounterExample(AppModel model) {
+        // TODO: implement getCounterExample query
+        return null;
     }
 
-    public Vector<ViewState> checkMembership(List<Touch> input) {
-        Vector<ViewState> output = new Vector<ViewState>(input.size());
+    //This implementation only put last palette to palette table.
+    public CList<ViewState> checkMembership(CList<Touch> input) {
+        if(input == null) return null;
+        if(input.size() == 0) return null;
+
+        CVector<ViewState> output = new CVector<ViewState>(input.size());
+        CSet<Touch> palette = null;
+
         for(Touch t: input){
-            controler.go(t); //TODO: Error handling
-            Collection<Touch> palette = controler.getView().getRepresentativePoints(pointFactory);
+            if(!controller.go(t))
+                return null;
+
+            palette = controller.getView().getRepresentativePoints(pointFactory);
+            if(palette == null)
+                return null;
+
             ViewState state = new ViewState(palette);
             output.add(state);
         }
-
+        paletteTable.put(input,palette);
+        
         return output;
-        //TODO: properly comparing everything
     }
 
-    public Collection<Touch> getPalette(List<Touch> input){
-        Collection<Touch> palette = paletteTable.get(input);
+    public CSet<Touch> getPalette(CList<Touch> input){
+        CSet<Touch> palette = paletteTable.get(input);
         
         if(palette == null){// If null, run application to reach desired state and acquire palette
-            boolean result = controler.go(input);
+            boolean result = controller.go(input);
             if(result){
-                MonkeyView view = controler.getView();
+                MonkeyView view = controller.getView();
                 if(view != null) return null;
                 
                 palette = view.getRepresentativePoints(pointFactory);
                 paletteTable.put(input,palette);
-
-                //TODO: filling palette table
             }
             else{
                 return null;
@@ -66,15 +74,15 @@ public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel>{
 
     public boolean init(){
         //1. Initiate connection with application
-        if(! controler.connectToDevice()) return false;
-        if(! controler.initiateApp()) return false;
+        if(! controller.connectToDevice()) return false;
+        if(! controller.initiateApp()) return false;
 
         //2. Warming palette table for initial state
-        MonkeyView view = controler.getView();
+        MonkeyView view = controller.getView();
         if(view != null) return false;
         
-        Collection<Touch> initialPalette = view.getRepresentativePoints(pointFactory);
-        paletteTable.put(new Vector<Touch>(),initialPalette);
+        CSet<Touch> initialPalette = view.getRepresentativePoints(pointFactory);
+        paletteTable.put(new CVector<Touch>(), initialPalette);
 
         return true;
     }

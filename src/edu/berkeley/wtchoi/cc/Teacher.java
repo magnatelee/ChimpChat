@@ -1,8 +1,5 @@
 package edu.berkeley.wtchoi.cc;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: wtchoi
@@ -10,14 +7,14 @@ import java.util.List;
  * Time: 3:58 PM
  * To change this template use File | Settings | File Templates.
  */
-interface Teacher<I extends Alphabet, O extends Alphabet, M extends Model<I,O>>{
+interface Teacher<I extends Comparable<I>, O extends Comparable<O>, M extends Model<I,O>>{
     // Used to implement equivalence query.
     // Should return null if model and target are equivalent
-    public Pair<List<I>,List<O>> getCounterExample(M model);
-    public List<O> checkMembership(List<I> input);
+    public Pair<CList<I>,CList<O>> getCounterExample(M model);
+    public CList<O> checkMembership(CList<I> input);
 }
 
-interface TeacherP<I extends Alphabet, O extends Alphabet, M extends Model<I,O>> extends Teacher<I,O,M>{
-    public Collection<I> getPalette(List<I> input);
+interface TeacherP<I extends Comparable<I>, O extends Comparable<O>, M extends Model<I,O>> extends Teacher<I,O,M>{
+    public CSet<I> getPalette(CList<I> input);
 }
 

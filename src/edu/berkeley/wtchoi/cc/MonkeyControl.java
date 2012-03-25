@@ -32,7 +32,6 @@ class MonkeyControlImp implements MonkeyControl{
     private static final long TIMEOUT = 5000;
     private ChimpChat mChimpchat;
     private static IChimpDevice mDevice;
-    private List<Option> mOptions;
 
     private java.io.ObjectInputStream ois;
     private java.io.ObjectOutputStream oos;
@@ -84,7 +83,6 @@ class MonkeyControlImp implements MonkeyControl{
     // Initiate application, connect chip, connect channel
     public boolean connectToDevice(){
         //1. Initiate Chimpcat Channel with a target device
-        mOptions = new java.util.ArrayList<Option>();
         mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
         if( mDevice == null){
             //throw new RuntimeException("Couldn't connect.");

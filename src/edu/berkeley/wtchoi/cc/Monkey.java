@@ -15,13 +15,16 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 public class Monkey {
     public void main(String args) {
         MonkeyControl controller = new MonkeyControlImp();
-        TeacherP<Command, ViewState, AppModel> teacher = new MonkeyTeacher(controller);
+        MonkeyTeacher teacher = new MonkeyTeacher(controller);
+        teacher.init();
+
         Learner<Command, ViewState, AppModel> learner = new LearnerFoo(teacher);// = new PaletteLearnerImp(teacher);
 
         Learning<Command, ViewState, AppModel> learning = new Learning<Command, ViewState, AppModel>(learner, teacher);
         learning.run();
 
         Model m = learner.getModel();
+        m.printModel(new BufferedWriter(new OutputStreamWriter(System.out)));
     }
 }
 
@@ -30,8 +33,7 @@ class ViewState implements Comparable<ViewState> {
     private CSet<Command> palette;
 
     public int compareTo(ViewState target) {
-        ViewState t = (ViewState) target;
-        return palette.compareTo(t.palette);
+        return palette.compareTo(target.palette);
     }
 
     public ViewState(CSet<Command> palette) {

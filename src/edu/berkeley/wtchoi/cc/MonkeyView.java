@@ -87,7 +87,6 @@ public class MonkeyView implements Serializable, Comparable {
         for (MonkeyView child : mv.children) {
             toString(buffer, child, depth + 1);
         }
-        return;
     }
 
 
@@ -102,7 +101,7 @@ public class MonkeyView implements Serializable, Comparable {
         extendGrids(grids_y);
 
         Collection<T> values = generatePoints(grids_x, grids_y, factory).values();
-        return new CSet(values);
+        return new CSet<T>(values);
     }
 
     private void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y) {
@@ -116,10 +115,10 @@ public class MonkeyView implements Serializable, Comparable {
         //System.out.println("!!!" + this.y);
         //System.out.println("!!!" + py);
 
-        grids_x.add(Integer.valueOf(my_x));
-        grids_x.add(Integer.valueOf(my_x + this.width));
-        grids_y.add(Integer.valueOf(my_y));
-        grids_y.add(Integer.valueOf(my_y + this.height));
+        grids_x.add(my_x);
+        grids_x.add(my_x + this.width);
+        grids_y.add(my_y);
+        grids_y.add(my_y + this.height);
 
         if (this.children == null) return;
         for (MonkeyView child : this.children) {
@@ -151,7 +150,7 @@ public class MonkeyView implements Serializable, Comparable {
         if (children == null) return this;
 
         //Assumption : children never intersect
-        MonkeyView projected_child = null;
+        MonkeyView projected_child;
         for (MonkeyView child : children) {
             projected_child = child.project(x, y, my_x, my_y);
             if (projected_child != null)

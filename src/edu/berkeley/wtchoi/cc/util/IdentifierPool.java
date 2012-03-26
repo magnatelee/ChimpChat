@@ -11,6 +11,6 @@ public class IdentifierPool {
     private static int intSeed = 0;
     
     public static Integer getFreshInteger(){
-        return new Integer(intSeed++);
+        return intSeed++;
     }
 }

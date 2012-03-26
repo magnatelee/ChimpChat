@@ -20,14 +20,14 @@ import java.util.*;
 public class LearnerFoo implements Learner<Command, ViewState, AppModel> {
     private TeacherP<Command, ViewState, AppModel> teacher;
     private Map<CList<Command>, CList<ViewState>> iomap;
-    private Set<CList<Command>> nexts;
+    private Set<CList<Command>> candidateSet;
 
     public LearnerFoo(TeacherP<Command, ViewState, AppModel> teacher) {
         this.teacher = teacher;
         iomap = new TreeMap<CList<Command>, CList<ViewState>>();
-        nexts = new TreeSet<CList<Command>>();
+        candidateSet = new TreeSet<CList<Command>>();
         CSet<Command> initialPalette = teacher.getPalette(null);
-        nexts.addAll(makeInputs(null, initialPalette));
+        candidateSet.addAll(makeInputs(null, initialPalette));
     }
 
     private Collection<CList<Command>> makeInputs(CList<Command> prefix, CSet<Command> alphabet) {
@@ -51,14 +51,14 @@ public class LearnerFoo implements Learner<Command, ViewState, AppModel> {
     }
 
     public CList<Command> getQuestion() {
-        if (nexts.isEmpty()) return null;
-        return nexts.iterator().next();
+        if (candidateSet.isEmpty()) return null;
+        return candidateSet.iterator().next();
     }
 
     public void learn(CList<Command> input, CList<ViewState> output) {
         if (!iomap.containsKey(input)) {
             CSet<Command> palette = teacher.getPalette(input);
-            nexts.addAll(makeInputs(input, palette));
+            candidateSet.addAll(makeInputs(input, palette));
         }
         iomap.put(input, output);
     }
@@ -67,8 +67,7 @@ public class LearnerFoo implements Learner<Command, ViewState, AppModel> {
     } // Do nothing
 
     public CList<ViewState> calculateTransition(CList<Command> input) {
-        CList<ViewState> result = iomap.get(input);
-        return result;
+        return iomap.get(input);
     }
 
     public AppModel getModel() {

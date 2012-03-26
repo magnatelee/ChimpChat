@@ -8,7 +8,7 @@ public class Packet {
         AckCommand, RequestView,
 
         // Packet from Application
-        AckStable;
+        AckStable
     }
 
     private static int id_next = 0;
@@ -22,28 +22,23 @@ public class Packet {
 
 
     public static Packet getAck() {
-        Packet ap = new Packet(PacketType.Ack);
-        return ap;
+        return new Packet(PacketType.Ack);
     }
 
     public static Packet getReset() {
-        Packet ap = new Packet(PacketType.Reset);
-        return ap;
+        return new Packet(PacketType.Reset);
     }
 
     public static Packet getRequestView() {
-        Packet ap = new Packet(PacketType.RequestView);
-        return ap;
+        return new Packet(PacketType.RequestView);
     }
 
     public static Packet getAckCommand() {
-        Packet ap = new Packet(PacketType.AckCommand);
-        return ap;
+        return new Packet(PacketType.AckCommand);
     }
 
     public static Packet getAckStable() {
-        Packet ap = new Packet(PacketType.AckStable);
-        return ap;
+        return new Packet(PacketType.AckStable);
     }
 
     public int getId() {

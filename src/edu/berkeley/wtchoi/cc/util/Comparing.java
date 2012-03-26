@@ -11,7 +11,7 @@ import java.util.Iterator;
  * To change this template use File | Settings | File Templates.
  */
 public class Comparing {
-    static public <T extends Comparable<T>> int iterCollection(Collection<T> a, Collection<T> b) {
+    static public <T extends Comparable<T>> int iterrableCollection(Collection<T> a, Collection<T> b) {
         int temp1 = a.size();
         int temp2 = b.size();
 

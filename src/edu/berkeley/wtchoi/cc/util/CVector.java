@@ -13,7 +13,7 @@ import java.util.Vector;
 //Comparable Vector
 public class CVector<T extends Comparable<T>> extends Vector<T> implements CList<T> {
     public int compareTo(CList<T> target) {
-        return Comparing.iterCollection(this, target);
+        return Comparing.iterrableCollection(this, target);
     }
 
     public CVector(int size) {

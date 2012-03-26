@@ -16,9 +16,9 @@ import edu.berkeley.wtchoi.cc.util.Pair;
  */
 
 public class Learning<I extends Comparable<I>, O extends Comparable<O>, M extends Model<I, O>> {
-    protected Learner<I, O, M> learner;
-    protected Teacher<I, O, M> teacher;
-    protected M model;
+    private Learner<I, O, M> learner;
+    private Teacher<I, O, M> teacher;
+    private M model;
 
     public Learning(Learner<I, O, M> l, Teacher<I, O, M> t) {
         learner = l;

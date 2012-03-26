@@ -1,8 +1,8 @@
-package edu.berkeley.wtchoi.cc;
+package edu.berkeley.wtchoi.cc.util;
 
 //generic pair
 //code from http://www.factsandpeople.com/facts-mainmenu-5/8-java/10-java-pair-class?start=1
-public class Pair<A, B>{
+public class Pair<A, B> {
 
     public A fst;
     public B snd;
@@ -12,11 +12,21 @@ public class Pair<A, B>{
         this.snd = snd;
     }
 
-    public A getFirst() { return fst; }
-    public B getSecond() { return snd; }
+    public A getFirst() {
+        return fst;
+    }
 
-    public void setFirst(A v) { fst = v; }
-    public void setSecond(B v) { snd = v; }
+    public B getSecond() {
+        return snd;
+    }
+
+    public void setFirst(A v) {
+        fst = v;
+    }
+
+    public void setSecond(B v) {
+        snd = v;
+    }
 
     public String toString() {
         return "Pair[" + fst + "," + snd + "]";
@@ -29,8 +39,8 @@ public class Pair<A, B>{
     public boolean equals(Object other) {
         return
                 other instanceof Pair &&
-                        equals(fst, ((Pair)other).fst) &&
-                        equals(snd, ((Pair)other).snd);
+                        equals(fst, ((Pair) other).fst) &&
+                        equals(snd, ((Pair) other).snd);
     }
 
     public int hashCode() {
@@ -39,18 +49,20 @@ public class Pair<A, B>{
         else return fst.hashCode() * 17 + snd.hashCode();
     }
 
-    public static <A,B> Pair<A,B> of(A a, B b) {
-        return new Pair<A,B>(a,b);
+    public static <A, B> Pair<A, B> of(A a, B b) {
+        return new Pair<A, B>(a, b);
     }
 }
 
-class CPair<A extends Comparable<A>,B extends Comparable<B>> extends Pair<A,B> implements Comparable<CPair<A,B>>{
-    public int compareTo(CPair<A,B> target){
+class CPair<A extends Comparable<A>, B extends Comparable<B>> extends Pair<A, B> implements Comparable<CPair<A, B>> {
+    public int compareTo(CPair<A, B> target) {
         int temp = this.fst.compareTo(target.fst);
-        if(temp !=0) return temp;
+        if (temp != 0) return temp;
         return this.snd.compareTo(target.snd);
     }
-    
-    public CPair(A fst, B snd){ super(fst,snd); }
+
+    public CPair(A fst, B snd) {
+        super(fst, snd);
+    }
 }
 

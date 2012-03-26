@@ -68,7 +68,7 @@ class MonkeyControlImp implements MonkeyControl{
             }
         }
 
-        public boolean getResult(){
+        public boolean getInitiateResult(){
             return result;
         }
     }
@@ -110,7 +110,7 @@ class MonkeyControlImp implements MonkeyControl{
         //3. Wait for communication channel initiation
         try{
             initiator.join();
-            if(!initiator.getResult()){
+            if(!initiator.getInitiateResult()){
                 //throw new RuntimeException("Communication channel cannot be initiated");
                 return false;
             }

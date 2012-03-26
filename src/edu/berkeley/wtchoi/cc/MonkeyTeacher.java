@@ -1,5 +1,13 @@
 package edu.berkeley.wtchoi.cc;
 
+import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
+import edu.berkeley.wtchoi.cc.interfaces.PointFactory;
+import edu.berkeley.wtchoi.cc.interfaces.TeacherP;
+import edu.berkeley.wtchoi.cc.util.CList;
+import edu.berkeley.wtchoi.cc.util.CSet;
+import edu.berkeley.wtchoi.cc.util.CVector;
+import edu.berkeley.wtchoi.cc.util.Pair;
+
 import java.util.TreeMap;
 
 
@@ -11,7 +19,7 @@ import java.util.TreeMap;
  * To change this template use File | Settings | File Templates.
  */
 
-public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel>{
+public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel> {
 
     private MonkeyControl controller;
     private TreeMap<CList<Touch>,CSet<Touch>> paletteTable;

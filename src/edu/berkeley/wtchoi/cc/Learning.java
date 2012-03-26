@@ -1,6 +1,12 @@
 package edu.berkeley.wtchoi.cc;
 
 
+import edu.berkeley.wtchoi.cc.interfaces.Learner;
+import edu.berkeley.wtchoi.cc.interfaces.Model;
+import edu.berkeley.wtchoi.cc.interfaces.Teacher;
+import edu.berkeley.wtchoi.cc.util.CList;
+import edu.berkeley.wtchoi.cc.util.Pair;
+
 /**
  * Created by IntelliJ IDEA.
  * User: wtchoi
@@ -23,6 +29,12 @@ public class Learning<I extends Comparable<I>, O extends Comparable<O>,  M exten
         while(true){
             //1. Do hypothesis generation, if not finished
             if(!learner.learnedHypothesis()){
+                try{
+                    System.out.println("Stroke any key to go");
+                    System.in.read();
+                }
+                catch(Exception e){}
+
                 CList<I> question = learner.getQuestion();
                 CList<O> answer = teacher.checkMembership(question);
                 learner.learn(question,answer);

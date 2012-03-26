@@ -2,21 +2,18 @@ package edu.berkeley.wtchoi.cc;
 
 import com.android.chimpchat.core.IChimpDevice;
 import com.android.chimpchat.core.TouchPressType;
+import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 /**
  * Created by IntelliJ IDEA.
  * User: wtchoi
- * Date: 3/24/12
- * Time: 4:30 AM
+ * Date: 3/25/12
+ * Time: 7:54 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface Command{
-    public void sendCommand(IChimpDevice target) throws RuntimeException;
-}
-
 
 //Concrete Touch Position. We are going to use this as an input character
-class Touch implements Command, Comparable<Touch> {//TODO
+public class Touch implements Command, Comparable<Touch> {//TODO
     private Integer x;
     private Integer y;
 
@@ -36,7 +33,7 @@ class Touch implements Command, Comparable<Touch> {//TODO
     public void sendCommand(IChimpDevice target){
         target.touch(x,y, TouchPressType.DOWN_AND_UP);
     }
-    
+
     public Integer getX(){return x;}
     public Integer getY(){return y;}
 }

@@ -2,8 +2,11 @@ package edu.berkeley.wtchoi.cc;
 
 import java.io.*;
 
-import com.android.chimpchat.core.PhysicalButton;
-import com.android.chimpchat.core.TouchPressType;
+import edu.berkeley.wtchoi.cc.interfaces.Learner;
+import edu.berkeley.wtchoi.cc.interfaces.Model;
+import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
+import edu.berkeley.wtchoi.cc.interfaces.TeacherP;
+import edu.berkeley.wtchoi.cc.util.CSet;
 //import com.android.chimpchat.core.IChimpView;
 
 
@@ -38,10 +41,7 @@ class ViewState implements Comparable<ViewState>{
     }
 }
 
-class AppModel implements Model<Touch,ViewState>{ //TODO
+class AppModel implements Model<Touch,ViewState> { //TODO
     public void printModel(Writer w){}
 }
 
-interface Model<I extends Comparable<I>, O extends Comparable<O>>{
-    public void printModel(Writer w);
-}

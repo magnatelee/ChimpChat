@@ -2,6 +2,8 @@ package edu.berkeley.wtchoi.cc;
 
 import com.android.chimpchat.ChimpChat;
 import com.android.chimpchat.core.IChimpDevice;
+import edu.berkeley.wtchoi.cc.interfaces.Command;
+import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
 
 import java.io.IOException;
 import java.util.*;
@@ -9,25 +11,11 @@ import java.util.*;
 /**
  * Created by IntelliJ IDEA.
  * User: wtchoi
- * Date: 3/24/12
- * Time: 4:29 AM
+ * Date: 3/25/12
+ * Time: 8:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface MonkeyControl {
-    public boolean connectToDevice();
-    public boolean initiateApp();
-
-    //public boolean resetData();
-
-    public boolean restartApp();
-    public boolean go(List<? extends Command> input);
-    public boolean go(Command input);
-    public MonkeyView getView();
-
-    public void shutdown();
-}
-
-class MonkeyControlImp implements MonkeyControl{
+public class MonkeyControlImp implements MonkeyControl {
     private static final String ADB = "/Applications/Android//android-sdk-mac_x86/platform-tools/adb";
     private static final long TIMEOUT = 5000;
     private ChimpChat mChimpchat;
@@ -35,8 +23,6 @@ class MonkeyControlImp implements MonkeyControl{
 
     private java.io.ObjectInputStream ois;
     private java.io.ObjectOutputStream oos;
-
-    private boolean cmd_sent = false;
 
     private class ChannelInitiator extends Thread{
         private MonkeyControlImp mMonkey;
@@ -174,18 +160,6 @@ class MonkeyControlImp implements MonkeyControl{
         return mv;
     }
 
-
-    private void ack(){
-        if(!cmd_sent) return;
-
-        try{
-            oos.writeObject(Packet.getAck());
-        }
-        catch(IOException e){
-            throw new RuntimeException("Cannot send ack");
-        }
-    }
-
     public boolean go(List<? extends Command> clist){
         try{
             //1. Send commands
@@ -205,16 +179,16 @@ class MonkeyControlImp implements MonkeyControl{
             //1.1 Send command through ChimpChat.
             c.sendCommand(mDevice);
 
-                //1.2 Send command acknowledgement to App Supervisor
-                Packet ack = Packet.getAckCommand();
-                oos.writeObject(ack);
+            //1.2 Send command acknowledgement to App Supervisor
+            Packet ack = Packet.getAckCommand();
+            oos.writeObject(ack);
 
-                //1.3 Wait for App Supervisor response
-                Packet receivingPacket = (Packet) ois.readObject();
-                if(receivingPacket.getType() != Packet.PacketType.AckStable){
-                    //throw new RuntimeException(Application Execution is not guided correctly);
-                    return false;
-                }
+            //1.3 Wait for App Supervisor response
+            Packet receivingPacket = (Packet) ois.readObject();
+            if(receivingPacket.getType() != Packet.PacketType.AckStable){
+                //throw new RuntimeException(Application Execution is not guided correctly);
+                return false;
+            }
         }
         catch(Exception e){
             return false;

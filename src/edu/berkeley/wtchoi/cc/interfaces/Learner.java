@@ -1,5 +1,13 @@
-package edu.berkeley.wtchoi.cc;
+package edu.berkeley.wtchoi.cc.interfaces;
 
+
+import edu.berkeley.wtchoi.cc.Model;
+import edu.berkeley.wtchoi.cc.util.CList;
+import edu.berkeley.wtchoi.cc.util.CSet;
+import edu.berkeley.wtchoi.cc.util.CVector;
+import edu.berkeley.wtchoi.cc.util.Pair;
+
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.

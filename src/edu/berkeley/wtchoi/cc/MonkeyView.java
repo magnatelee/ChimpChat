@@ -1,5 +1,8 @@
 package edu.berkeley.wtchoi.cc;
 
+import edu.berkeley.wtchoi.cc.interfaces.PointFactory;
+import edu.berkeley.wtchoi.cc.util.CSet;
+
 import java.lang.Comparable;
 import java.io.Serializable;
 import java.util.LinkedList;

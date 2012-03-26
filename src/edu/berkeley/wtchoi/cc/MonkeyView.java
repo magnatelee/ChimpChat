@@ -4,7 +4,6 @@ import java.lang.Comparable;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Collection;
-import java.util.Set;
 import java.io.BufferedWriter;
 import java.util.TreeSet;
 import java.util.Map;
@@ -85,7 +84,7 @@ public class MonkeyView implements Serializable, Comparable {
 
 
     //Function to collect representative click positions for each equivalence class
-    public <T> Collection<T> getRepresentativePoints(PointFactory<T> factory){
+    public <T extends Comparable<T>> CSet<T> getRepresentativePoints(PointFactory<T> factory){
         //Infer click points from view hierarchy
         TreeSet<Integer> grids_x = new TreeSet<Integer>();
         TreeSet<Integer> grids_y = new TreeSet<Integer>();
@@ -94,11 +93,8 @@ public class MonkeyView implements Serializable, Comparable {
         extendGrids(grids_x);
         extendGrids(grids_y);
 
-        return generatePoints(grids_x, grids_y, factory).values();
-    }
-    
-    public Collection<Pair<Integer,Integer>> getRepresentativePoints(){
-        return getRepresentativePoints(null);
+        Collection<T> values = generatePoints(grids_x, grids_y, factory).values();
+        return new CSet(values);
     }
 	
 	private void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y){

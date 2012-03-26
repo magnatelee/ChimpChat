@@ -13,6 +13,7 @@ import java.util.*;
  * Time: 4:29 AM
  * To change this template use File | Settings | File Templates.
  */
+
 public interface MonkeyControl {
     public boolean connectToDevice();
     public boolean initiateApp();
@@ -36,7 +37,7 @@ class MonkeyControlImp implements MonkeyControl{
     private java.io.ObjectInputStream ois;
     private java.io.ObjectOutputStream oos;
 
-    private boolean cmd_sent = false;
+    private boolean app_stability = false;
 
     private class ChannelInitiator extends Thread{
         private MonkeyControlImp mMonkey;
@@ -73,7 +74,6 @@ class MonkeyControlImp implements MonkeyControl{
     }
 
     public MonkeyControlImp(){
-        super();
         TreeMap<String,String> options = new TreeMap<String,String>();
         options.put("backend","adb");
         options.put("adbLocation",ADB);
@@ -125,6 +125,7 @@ class MonkeyControlImp implements MonkeyControl{
                 //throw new RuntimeException("Application sent wrong packet. AckStable expected");
                 return false;
             }
+            this.app_stability = true;
         }
         catch(Exception e){
             //throw new RuntimeException("Cannot get packet from Application");
@@ -137,10 +138,12 @@ class MonkeyControlImp implements MonkeyControl{
         //However, we may need more complex protocol to fine control an application.
     }
 
+
     public boolean restartApp(){
         return initiateApp();
         //TODO: redesign protocol to include separate restart packet!
     }
+
 
     public void shutdown(){
         mChimpchat.shutdown();
@@ -153,12 +156,17 @@ class MonkeyControlImp implements MonkeyControl{
 
         try{
             //0. Assume that application is waiting for command
+            if(!app_stability) return null;
+
             //1. Send request view packet to application
             Packet packet = Packet.getRequestView();
             oos.writeObject(packet);
 
             //2. Wait and get a View information from application
             mv = (MonkeyView) ois.readObject();
+
+            //Since RequestView command does not alter application state,
+            //we don't have to change app_stability flag.
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -175,16 +183,6 @@ class MonkeyControlImp implements MonkeyControl{
     }
 
 
-    private void ack(){
-        if(!cmd_sent) return;
-
-        try{
-            oos.writeObject(Packet.getAck());
-        }
-        catch(IOException e){
-            throw new RuntimeException("Cannot send ack");
-        }
-    }
 
     public boolean go(List<? extends Command> clist){
         try{
@@ -199,28 +197,34 @@ class MonkeyControlImp implements MonkeyControl{
         return true;
     }
 
+
     public boolean go(Command c){
         //0. Assume application is waiting for command
+        if(!app_stability) return false;
+
         try{
             //1.1 Send command through ChimpChat.
             c.sendCommand(mDevice);
+            app_stability = false;
 
-                //1.2 Send command acknowledgement to App Supervisor
-                Packet ack = Packet.getAckCommand();
-                oos.writeObject(ack);
+            //1.2 Send command acknowledgement to App Supervisor
+            Packet ack = Packet.getAckCommand();
+            oos.writeObject(ack);
 
-                //1.3 Wait for App Supervisor response
-                Packet receivingPacket = (Packet) ois.readObject();
-                if(receivingPacket.getType() != Packet.PacketType.AckStable){
-                    //throw new RuntimeException(Application Execution is not guided correctly);
-                    return false;
-                }
+            //1.3 Wait for App Supervisor response
+            Packet receivingPacket = (Packet) ois.readObject();
+            if(receivingPacket.getType() != Packet.PacketType.AckStable){
+                //throw new RuntimeException(Application Execution is not guided correctly);
+                return false;
+            }
+            app_stability = true;
         }
         catch(Exception e){
             return false;
         }
         return true;
     }
+
 
     public static IChimpDevice getDevice(){ return mDevice; }
 }

@@ -7,6 +7,7 @@ import edu.berkeley.wtchoi.cc.util.CList;
 import edu.berkeley.wtchoi.cc.util.CSet;
 import edu.berkeley.wtchoi.cc.util.CVector;
 import edu.berkeley.wtchoi.cc.util.Pair;
+import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 import java.util.TreeMap;
 
@@ -19,36 +20,37 @@ import java.util.TreeMap;
  * To change this template use File | Settings | File Templates.
  */
 
-public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel> {
+public class MonkeyTeacher implements TeacherP<Command, ViewState, AppModel> {
 
     private MonkeyControl controller;
-    private TreeMap<CList<Touch>, CSet<Touch>> paletteTable;
+    private TreeMap<CList<Command>, CSet<Command>> paletteTable;
 
-    private PointFactory<Touch> pointFactory;
+    private PointFactory<Command> pointFactory;
 
     public MonkeyTeacher(MonkeyControl imp) {
         controller = imp;
         pointFactory = TouchFactory.getInstance();
     }
 
-    public Pair<CList<Touch>, CList<ViewState>> getCounterExample(AppModel model) {
+    public Pair<CList<Command>, CList<ViewState>> getCounterExample(AppModel model) {
         // TODO: implement getCounterExample query
         return null;
     }
 
     //This implementation only put last palette to palette table.
-    public CList<ViewState> checkMembership(CList<Touch> input) {
+    public CList<ViewState> checkMembership(CList<Command> input) {
         if (input == null) return null;
         if (input.size() == 0) return null;
 
         CVector<ViewState> output = new CVector<ViewState>(input.size());
-        CSet<Touch> palette = null;
+        CSet<Command> palette = null;
 
-        for (Touch t : input) {
+        for (Command t : input) {
             if (!controller.go(t))
                 return null;
 
-            palette = controller.getView().getRepresentativePoints(pointFactory);
+            MonkeyView mv = controller.getView();
+            palette = mv.getRepresentativePoints(pointFactory);
             if (palette == null)
                 return null;
 
@@ -56,12 +58,12 @@ public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel> {
             output.add(state);
         }
         paletteTable.put(input, palette);
-
+        
         return output;
     }
 
-    public CSet<Touch> getPalette(CList<Touch> input) {
-        CSet<Touch> palette = paletteTable.get(input);
+    public CSet<Command> getPalette(CList<Command> input) {
+        CSet<Command> palette = paletteTable.get(input);
 
         if (palette == null) {// If null, run application to reach desired state and acquire palette
             boolean result = controller.go(input);
@@ -88,8 +90,8 @@ public class MonkeyTeacher implements TeacherP<Touch, ViewState, AppModel> {
         MonkeyView view = controller.getView();
         if (view != null) return false;
 
-        CSet<Touch> initialPalette = view.getRepresentativePoints(pointFactory);
-        paletteTable.put(new CVector<Touch>(), initialPalette);
+        CSet<Command> initialPalette = view.getRepresentativePoints(pointFactory);
+        paletteTable.put(new CVector<Command>(), initialPalette);
 
         return true;
     }

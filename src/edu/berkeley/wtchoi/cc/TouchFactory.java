@@ -1,6 +1,7 @@
 package edu.berkeley.wtchoi.cc;
 
 import edu.berkeley.wtchoi.cc.interfaces.PointFactory;
+import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,11 +10,11 @@ import edu.berkeley.wtchoi.cc.interfaces.PointFactory;
  * Time: 7:50 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TouchFactory implements PointFactory<Touch> {
+public class TouchFactory implements PointFactory<Command> {
     private static TouchFactory instance;
 
-    public Touch get(int x, int y) {
-        return new Touch(x, y);
+    public Command get(int x, int y) {
+        return new Touch(x, y) ;
     }
 
     static TouchFactory getInstance() {

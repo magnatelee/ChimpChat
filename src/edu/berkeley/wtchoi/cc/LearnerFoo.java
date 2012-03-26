@@ -6,6 +6,7 @@ import edu.berkeley.wtchoi.cc.util.CList;
 import edu.berkeley.wtchoi.cc.util.CSet;
 import edu.berkeley.wtchoi.cc.util.CVector;
 import edu.berkeley.wtchoi.cc.util.Pair;
+import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 import java.util.*;
 
@@ -16,28 +17,28 @@ import java.util.*;
  * Time: 7:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LearnerFoo implements Learner<Touch, ViewState, AppModel> {
-    private TeacherP<Touch, ViewState, AppModel> teacher;
-    private Map<CList<Touch>, CList<ViewState>> iomap;
-    private Set<CList<Touch>> nexts;
+public class LearnerFoo implements Learner<Command, ViewState, AppModel> {
+    private TeacherP<Command, ViewState, AppModel> teacher;
+    private Map<CList<Command>, CList<ViewState>> iomap;
+    private Set<CList<Command>> nexts;
 
-    public LearnerFoo(TeacherP<Touch, ViewState, AppModel> teacher) {
+    public LearnerFoo(TeacherP<Command, ViewState, AppModel> teacher) {
         this.teacher = teacher;
-        iomap = new TreeMap<CList<Touch>, CList<ViewState>>();
-        nexts = new TreeSet<CList<Touch>>();
-        CSet<Touch> initialPalette = teacher.getPalette(null);
+        iomap = new TreeMap<CList<Command>, CList<ViewState>>();
+        nexts = new TreeSet<CList<Command>>();
+        CSet<Command> initialPalette = teacher.getPalette(null);
         nexts.addAll(makeInputs(null, initialPalette));
     }
 
-    private Collection<CList<Touch>> makeInputs(CList<Touch> prefix, CSet<Touch> alphabet) {
+    private Collection<CList<Command>> makeInputs(CList<Command> prefix, CSet<Command> alphabet) {
         if (prefix == null) {
-            prefix = new CVector<Touch>();
+            prefix = new CVector<Command>();
         }
 
-        Collection<CList<Touch>> set = new TreeSet<CList<Touch>>();
+        Collection<CList<Command>> set = new TreeSet<CList<Command>>();
 
-        for (Touch t : alphabet) {
-            CList<Touch> new_input = new CVector<Touch>(prefix);
+        for (Command t : alphabet) {
+            CList<Command> new_input = new CVector<Command>(prefix);
             new_input.add(t);
             set.add(new_input);
         }
@@ -49,23 +50,23 @@ public class LearnerFoo implements Learner<Touch, ViewState, AppModel> {
         return false;  // Do nothing
     }
 
-    public CList<Touch> getQuestion() {
+    public CList<Command> getQuestion() {
         if (nexts.isEmpty()) return null;
         return nexts.iterator().next();
     }
 
-    public void learn(CList<Touch> input, CList<ViewState> output) {
+    public void learn(CList<Command> input, CList<ViewState> output) {
         if (!iomap.containsKey(input)) {
-            CSet<Touch> palette = teacher.getPalette(input);
+            CSet<Command> palette = teacher.getPalette(input);
             nexts.addAll(makeInputs(input, palette));
         }
         iomap.put(input, output);
     }
 
-    public void learnCounterExample(Pair<CList<Touch>, CList<ViewState>> ce) {
+    public void learnCounterExample(Pair<CList<Command>, CList<ViewState>> ce) {
     } // Do nothing
 
-    public CList<ViewState> calculateTransition(CList<Touch> input) {
+    public CList<ViewState> calculateTransition(CList<Command> input) {
         CList<ViewState> result = iomap.get(input);
         return result;
     }

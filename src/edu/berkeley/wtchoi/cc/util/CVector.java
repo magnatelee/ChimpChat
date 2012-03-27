@@ -1,6 +1,10 @@
 package edu.berkeley.wtchoi.cc.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -13,7 +17,7 @@ import java.util.Vector;
 //Comparable Vector
 public class CVector<T extends Comparable<T>> extends Vector<T> implements CList<T> {
     public int compareTo(CList<T> target) {
-        return Comparing.iterrableCollection(this, target);
+        return CollectionUtil.compare(this, target);
     }
 
     public CVector(int size) {
@@ -26,5 +30,13 @@ public class CVector<T extends Comparable<T>> extends Vector<T> implements CList
 
     public CVector(Collection<T> collection) {
         super(collection);
+    }
+    
+    public void writeTo(Writer writer) throws IOException{
+        CollectionUtil.writeTo(this,"[","; ","]",writer);
+    }
+    
+    public String toString(){
+        return CollectionUtil.stringOf(this,"[","; ","]") ;
     }
 }

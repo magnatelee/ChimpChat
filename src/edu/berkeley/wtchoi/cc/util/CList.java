@@ -10,6 +10,5 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 
-public interface CList<T extends Comparable<T>> extends Comparable<CList<T>>, List<T> {
-}
+public interface CList<T extends Comparable<T>> extends Comparable<CList<T>>, List<T> {}
 

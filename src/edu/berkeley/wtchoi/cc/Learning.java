@@ -38,6 +38,9 @@ public class Learning<I extends Comparable<I>, O extends Comparable<O>, M extend
                 CList<I> question = learner.getQuestion();
                 CList<O> answer = teacher.checkMembership(question);
                 learner.learn(question, answer);
+                System.out.println("----------");
+                System.out.println(question);
+                System.out.println(answer);
                 continue;
             }
 

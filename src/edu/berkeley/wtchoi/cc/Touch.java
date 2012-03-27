@@ -56,4 +56,8 @@ public class Touch implements Command{//TODO
     public Integer typeint(){
         return tint;
     }
+    
+    public String toString(){
+        return ("(" + x + "," + y + ")");
+    }
 }

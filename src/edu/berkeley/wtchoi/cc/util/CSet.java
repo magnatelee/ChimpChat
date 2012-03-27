@@ -1,5 +1,7 @@
 package edu.berkeley.wtchoi.cc.util;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Collection;
@@ -17,10 +19,18 @@ import java.lang.Comparable;
 //Comparable Set
 public class CSet<T extends Comparable<T>> extends TreeSet<T> implements Set<T>, Comparable<CSet<T>> {
     public int compareTo(CSet<T> target) {
-        return Comparing.iterrableCollection(this, target);
+        return CollectionUtil.compare(this, target);
     }
 
     public CSet(Collection<T> collection) {
         super(collection);
+    }
+    
+    public void writeTo(Writer writer) throws IOException{
+        CollectionUtil.writeTo(this,"{",", ","}",writer);
+    }
+    
+    public String toString(){
+        return CollectionUtil.stringOf(this,"{",", ","}");
     }
 }

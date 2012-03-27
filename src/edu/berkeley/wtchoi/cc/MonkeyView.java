@@ -19,11 +19,15 @@ public class MonkeyView implements Serializable, Comparable {
      */
     private static final long serialVersionUID = -5186309675577891457L;
 
+    //basic properties
     private int x;
     private int y;
     private int width;
     private int height;
     private LinkedList<MonkeyView> children;
+
+    //additional properties
+    private boolean visible = true;
 
     @SuppressWarnings("unchecked")
     public MonkeyView(int ix, int iy, int iw, int ih, LinkedList<MonkeyView> ic) {
@@ -34,6 +38,10 @@ public class MonkeyView implements Serializable, Comparable {
 
         if (ic != null) children = (LinkedList<MonkeyView>) ic.clone();
         else children = null;
+    }
+
+    public void setVisible(boolean flag){
+        visible = flag;
     }
 
     public int getX() {
@@ -104,9 +112,11 @@ public class MonkeyView implements Serializable, Comparable {
         return new CSet<T>(values);
     }
 
+
     private void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y) {
         collectGrid(grids_x, grids_y, 0, 0);
     }
+
 
     private void collectGrid(Collection<Integer> grids_x, Collection<Integer> grids_y, int px, int py) {
         int my_x = px + this.x;
@@ -147,7 +157,10 @@ public class MonkeyView implements Serializable, Comparable {
                 return null;
 
         //If there is no children, just return myself
-        if (children == null) return this;
+        if (children == null){
+            if(this.visible) return this;
+            return null; //TODO: To find out whether visibility is a synonym of being able to click
+        }
 
         //Assumption : children never intersect
         MonkeyView projected_child;

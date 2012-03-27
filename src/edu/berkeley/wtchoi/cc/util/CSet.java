@@ -22,6 +22,8 @@ public class CSet<T extends Comparable<T>> extends TreeSet<T> implements Set<T>,
         return CollectionUtil.compare(this, target);
     }
 
+    public CSet(){}
+    
     public CSet(Collection<T> collection) {
         super(collection);
     }

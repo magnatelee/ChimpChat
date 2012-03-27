@@ -111,7 +111,7 @@ class MonkeyControlImp implements MonkeyControl {
         //4. Wait for application to be ready for command
         try {
             Packet packet = (Packet) this.ois.readObject();
-            if (packet.getType() != Packet.PacketType.AckStable) {
+            if (packet.getType() != Packet.Type.AckStable) {
                 //throw new RuntimeException("Application sent wrong packet. AckStable expected");
                 return false;
             }
@@ -185,7 +185,7 @@ class MonkeyControlImp implements MonkeyControl {
 
             //1.3 Wait for App Supervisor response
             Packet receivingPacket = (Packet) ois.readObject();
-            if (receivingPacket.getType() != Packet.PacketType.AckStable) {
+            if (receivingPacket.getType() != Packet.Type.AckStable) {
                 //throw new RuntimeException(Application Execution is not guided correctly);
                 return false;
             }

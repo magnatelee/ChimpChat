@@ -2,7 +2,7 @@ package edu.berkeley.wtchoi.cc;
 
 public class Packet {
 
-    public enum PacketType {
+    public enum Type {
         Ack, Reset,
         // Packet from MonkeyControl
         AckCommand, RequestView,
@@ -13,39 +13,39 @@ public class Packet {
 
     private static int id_next = 0;
     private int id;
-    private PacketType type;
+    private Type type;
 
-    private Packet(PacketType t) {
+    private Packet(Type t) {
         id = id_next++;
         type = t;
     }
 
 
     public static Packet getAck() {
-        return new Packet(PacketType.Ack);
+        return new Packet(Type.Ack);
     }
 
     public static Packet getReset() {
-        return new Packet(PacketType.Reset);
+        return new Packet(Type.Reset);
     }
 
     public static Packet getRequestView() {
-        return new Packet(PacketType.RequestView);
+        return new Packet(Type.RequestView);
     }
 
     public static Packet getAckCommand() {
-        return new Packet(PacketType.AckCommand);
+        return new Packet(Type.AckCommand);
     }
 
     public static Packet getAckStable() {
-        return new Packet(PacketType.AckStable);
+        return new Packet(Type.AckStable);
     }
 
     public int getId() {
         return id;
     }
 
-    public PacketType getType() {
+    public Type getType() {
         return type;
     }
 }

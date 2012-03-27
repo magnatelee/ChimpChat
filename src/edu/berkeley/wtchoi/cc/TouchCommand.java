@@ -13,7 +13,7 @@ import edu.berkeley.wtchoi.cc.util.IdentifierPool;
  * To change this template use File | Settings | File Templates.
  */
 //Concrete Command Position. We are going to use this as an input character
-public class Touch implements Command{//TODO
+public class TouchCommand implements Command{//TODO
     private Integer x;
     private Integer y;
 
@@ -24,11 +24,11 @@ public class Touch implements Command{//TODO
         int c1 = tint.compareTo(target.typeint());
         if(c1 != 0) return c1;
 
-        Touch t = (Touch) target;
+        TouchCommand t = (TouchCommand) target;
         return this.compareTo(t);
     }
     
-    public int compareTo(Touch target){
+    public int compareTo(TouchCommand target){
         int c1 = x.compareTo(target.x);
         if (c1 == 0) {
             return y.compareTo(target.y);
@@ -36,7 +36,7 @@ public class Touch implements Command{//TODO
         return c1;
     }
 
-    public Touch(Integer x, Integer y) {
+    public TouchCommand(Integer x, Integer y) {
         this.x = x;
         this.y = y;
     }

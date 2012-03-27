@@ -10,7 +10,7 @@ package edu.berkeley.wtchoi.cc;
 class MonkeyControlOption{
     private String mainActivity;
     private String applicationPackage;
-    private long timeout = 5000;
+    private long   timeout = 5000;
     private String adb;
 
 

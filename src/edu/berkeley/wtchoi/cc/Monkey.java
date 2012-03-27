@@ -8,10 +8,6 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 //import com.android.chimpchat.core.IChimpView;
 
 
-//Code fragment for push MENU button
-//MonkeyControlImp.getDevice().press(PhysicalButton.MENU, TouchPressType.DOWN_AND_UP);
-
-
 public class Monkey {
     public void main(String args) {
         MonkeyControlOption option = new MonkeyControlOption();

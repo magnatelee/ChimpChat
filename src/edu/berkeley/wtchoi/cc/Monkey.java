@@ -14,7 +14,12 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 public class Monkey {
     public void main(String args) {
-        MonkeyControl controller = new MonkeyControlImp();
+        MonkeyControlOption option = new MonkeyControlOption();
+        option.setADB("/Applications/Android//android-sdk-mac_x86/platform-tools/adb");
+        option.setApplicationPackage("com.android.demo.notepad3");
+        option.setMainActivity("com.android.demo.notepad3.Notepadv3");
+        
+        MonkeyControl controller = new MonkeyControlImp(option);
         MonkeyTeacher teacher = new MonkeyTeacher(controller);
         teacher.init();
 

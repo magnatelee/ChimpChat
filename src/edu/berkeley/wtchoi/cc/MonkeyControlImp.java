@@ -6,6 +6,7 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
 
 import java.io.IOException;
+import java.io.OptionalDataException;
 import java.util.*;
 
 /**
@@ -17,10 +18,12 @@ import java.util.*;
  */
 
 class MonkeyControlImp implements MonkeyControl {
-    private static final String ADB = "/Applications/Android//android-sdk-mac_x86/platform-tools/adb";
-    private static final long TIMEOUT = 5000;
+   
+    private MonkeyControlOption option;
+        
     private ChimpChat mChimpchat;
-    private static IChimpDevice mDevice;
+    private IChimpDevice mDevice;
+    
 
     private java.io.ObjectInputStream ois;
     private java.io.ObjectOutputStream oos;
@@ -58,18 +61,23 @@ class MonkeyControlImp implements MonkeyControl {
         }
     }
 
-    public MonkeyControlImp() {
+    public MonkeyControlImp(MonkeyControlOption option) {
         super();
-        TreeMap<String, String> options = new TreeMap<String, String>();
-        options.put("backend", "adb");
-        options.put("adbLocation", ADB);
-        mChimpchat = ChimpChat.getInstance(options);
+        this.option = option;
     }
 
     // Initiate application, connect chip, connect channel
     public boolean connectToDevice() {
-        //1. Initiate Chimpcat Channel with a target device
-        mDevice = mChimpchat.waitForConnection(TIMEOUT, ".*");
+        if(!option.isComplete()) return false;
+        
+        //1. Boot ChimpChat Instance
+        TreeMap<String, String> options = new TreeMap<String, String>();
+        options.put("backend", "adb");
+        options.put("adbLocation", option.getADB());
+        mChimpchat = ChimpChat.getInstance(options);
+
+        //2. Initiate ChimpChat Channel with a target device
+        mDevice = mChimpchat.waitForConnection(option.getTimeout(), ".*");
         if (mDevice == null) {
             //throw new RuntimeException("Couldn't connect.");
             return false;
@@ -82,11 +90,8 @@ class MonkeyControlImp implements MonkeyControl {
         //1. Initiate Communication Channel (Asynchronous)
         ChannelInitiator initiator = new ChannelInitiator(this);
         initiator.start();
-
-        //2. Invoke target application
-        String appPackage = "com.android.demo.notepad3";
-        String activity = "com.android.demo.notepad3.Notepadv3";
-        String runComponent = appPackage + '/' + activity;
+        
+        String runComponent = option.getRunComponent();
         Collection<String> coll = new LinkedList<String>();
         Map<String, Object> extras = new HashMap<String, Object>();
         mDevice.startActivity(null, null, null, null, coll, extras, runComponent, 0);
@@ -188,9 +193,5 @@ class MonkeyControlImp implements MonkeyControl {
             return false;
         }
         return true;
-    }
-
-    public static IChimpDevice getDevice() {
-        return mDevice;
     }
 }

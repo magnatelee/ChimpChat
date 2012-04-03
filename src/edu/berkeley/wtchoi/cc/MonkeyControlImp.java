@@ -4,6 +4,7 @@ import com.android.chimpchat.ChimpChat;
 import com.android.chimpchat.core.IChimpDevice;
 import edu.berkeley.wtchoi.cc.interfaces.Command;
 import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
+import edu.berkeley.wtchoi.cc.util.DDNS;
 
 import java.io.IOException;
 import java.io.OptionalDataException;
@@ -72,17 +73,22 @@ class MonkeyControlImp implements MonkeyControl {
         this.option = option;
     }
 
+
     // Initiate application, connect chip, connect channel
     public boolean connectToDevice() {
+        //Tried to use DNS. but impossible....
+        //if(!DDNS.regist("chimpchat.oa.to","jbdmk1","RmsRhkd")) return false;
+
+        //2. Check whether option is complete or not
         if(!option.isComplete()) return false;
         
-        //1. Boot ChimpChat Instance
+        //3. Boot ChimpChat Instance
         TreeMap<String, String> options = new TreeMap<String, String>();
         options.put("backend", "adb");
         options.put("adbLocation", option.getADB());
         mChimpchat = ChimpChat.getInstance(options);
 
-        //2. Initiate ChimpChat Channel with a target device
+        //4. Initiate ChimpChat Channel with a target device
         mDevice = mChimpchat.waitForConnection(option.getTimeout(), ".*");
         if (mDevice == null) {
             //throw new RuntimeException("Couldn't connect.");
@@ -91,6 +97,7 @@ class MonkeyControlImp implements MonkeyControl {
         mDevice.wake();
         return true;
     }
+
 
     public boolean initiateApp() {
         //1. Initiate Communication Channel (Asynchronous)

@@ -148,6 +148,7 @@ public class MonkeyView implements Serializable, Comparable {
     }
 
     private MonkeyView project(Integer x, Integer y, int px, int py) {
+        //System.out.println((px+x)+","+(y+py));
         int my_x = this.x + px;
         int my_y = this.y + py;
 
@@ -158,8 +159,9 @@ public class MonkeyView implements Serializable, Comparable {
 
         //If there is no children, just return myself
         if (children == null){
-            if(this.visible) return this;
-            return null; //TODO: To find out whether visibility is a synonym of being able to click
+            if(this.visible)
+                return this;
+            return null;
         }
 
         //Assumption : children never intersect

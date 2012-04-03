@@ -18,6 +18,9 @@ public class TouchFactory implements PointFactory<Command> {
     }
 
     static TouchFactory getInstance() {
+        if(instance == null){
+            instance = new TouchFactory();
+        }
         return instance;
     }
 }

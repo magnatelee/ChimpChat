@@ -10,14 +10,14 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 public class Monkey {
     public static void main(String args[]) {
+
         MonkeyControlOption option = new MonkeyControlOption();
-        option.setADB("/Applications/Android//android-sdk-mac_x86/platform-tools/adb");
-        option.setApplicationPackage("com.android.demo.notepad3");
-        option.setMainActivity("com.android.demo.notepad3.Notepadv3");
+        option.fillFromEnvironmentVariables();
         
         MonkeyControl controller = new MonkeyControlImp(option);
         MonkeyTeacher teacher = new MonkeyTeacher(controller);
-        teacher.init();
+
+        if(!teacher.init()) throw new RuntimeException("Cannot initialize teacher");
 
         Learner<Command, ViewState, AppModel> learner = new LearnerFoo(teacher);// = new PaletteLearnerImp(teacher);
 

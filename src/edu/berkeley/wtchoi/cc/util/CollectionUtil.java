@@ -35,7 +35,9 @@ public class CollectionUtil {
                     return 1;
                 }
             } else {
-                return -1;
+                if(it2.hasNext())
+                    return -1;
+                return 0;
             }
         }
     }

@@ -7,6 +7,7 @@ import edu.berkeley.wtchoi.cc.interfaces.MonkeyControl;
 
 import java.io.IOException;
 import java.io.OptionalDataException;
+import java.net.Socket;
 import java.util.*;
 
 /**
@@ -27,6 +28,7 @@ class MonkeyControlImp implements MonkeyControl {
 
     private java.io.ObjectInputStream ois;
     private java.io.ObjectOutputStream oos;
+    private Socket socket;
 
     private class ChannelInitiator extends Thread {
         private MonkeyControlImp mMonkey;
@@ -48,6 +50,7 @@ class MonkeyControlImp implements MonkeyControl {
                 System.out.println("go");
                 serverSocket.close();
 
+                mMonkey.socket = socket;
                 mMonkey.ois = new java.io.ObjectInputStream(socket.getInputStream());
                 mMonkey.oos = new java.io.ObjectOutputStream(socket.getOutputStream());
                 result = true;
@@ -96,7 +99,7 @@ class MonkeyControlImp implements MonkeyControl {
         Map<String, Object> extras = new HashMap<String, Object>();
         mDevice.startActivity(null, null, null, null, coll, extras, runComponent, 0);
 
-        //3. Wait for communication channel initiation
+        //2. Wait for communication channel initiation
         try {
             initiator.join();
             if (!initiator.getInitiateResult()) {
@@ -108,7 +111,7 @@ class MonkeyControlImp implements MonkeyControl {
             return false;
         }
 
-        //4. Wait for application to be ready for command
+        //3. Wait for application to be ready for command
         try {
             Packet packet = (Packet) this.ois.readObject();
             if (packet.getType() != Packet.Type.AckStable) {
@@ -120,6 +123,7 @@ class MonkeyControlImp implements MonkeyControl {
             return false;
         }
 
+        System.out.println("Application Initiated");
         return true;
         //NOTE: At this moment, we expect application to erase all user data when ever it starts.
         //Therefore, our protocol doesn't have anythings about resetting application data.

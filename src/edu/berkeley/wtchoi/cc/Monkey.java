@@ -9,7 +9,7 @@ import edu.berkeley.wtchoi.cc.interfaces.Command;
 
 
 public class Monkey {
-    public void main(String args) {
+    public static void main(String args[]) {
         MonkeyControlOption option = new MonkeyControlOption();
         option.setADB("/Applications/Android//android-sdk-mac_x86/platform-tools/adb");
         option.setApplicationPackage("com.android.demo.notepad3");

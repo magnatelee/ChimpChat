@@ -50,12 +50,13 @@ public class MonkeyTeacher implements TeacherP<Command, ViewState, AppModel> {
         CVector<ViewState> output = new CVector<ViewState>(input.size());
         CSet<Command> palette = null;
 
-        controller.initiateApp();
+        controller.restartApp();
         for (Command t : input) {
             if (!controller.go(t))
                 return null;
 
             MonkeyView mv = controller.getView();
+            System.out.println(mv);
             palette = mv.getRepresentativePoints(pointFactory);
             palette.addAll(defaultPalette);
             if (palette == null)
@@ -65,6 +66,10 @@ public class MonkeyTeacher implements TeacherP<Command, ViewState, AppModel> {
             output.add(state);
         }
         paletteTable.put(input, palette);
+
+        System.out.println("New Palette found");
+        System.out.println(input);
+        System.out.println(palette);
         
         return output;
     }
@@ -73,7 +78,8 @@ public class MonkeyTeacher implements TeacherP<Command, ViewState, AppModel> {
         CSet<Command> palette = paletteTable.get(input);
 
         if (palette == null) {// If null, run application to reach desired state and acquire palette
-            controller.initiateApp();
+            System.out.println("Palette Miss!");
+            controller.restartApp();
             boolean result = controller.go(input);
             if (result) {
                 MonkeyView view = controller.getView();

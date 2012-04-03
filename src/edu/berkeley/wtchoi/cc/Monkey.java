@@ -40,6 +40,10 @@ class ViewState implements Comparable<ViewState> {
     public ViewState(CSet<Command> palette) {
         this.palette = palette;
     }
+
+    public String toString(){
+        return palette.toString();
+    }
 }
 
 class AppModel implements Model<Command, ViewState> { //TODO

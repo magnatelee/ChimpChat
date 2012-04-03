@@ -1,6 +1,10 @@
 package edu.berkeley.wtchoi.cc;
 
-public class Packet {
+import java.io.Serializable;
+
+public class Packet implements Serializable{
+
+    private static final long serialVersionUID = -5186309675577891457L;
 
     public enum Type {
         Ack, Reset,

@@ -54,4 +54,8 @@ public class PushCommand implements Command{
     public Integer typeint(){
         return typeint;
     }
+
+    public String toString(){
+        return "MENU";
+    }
 }

@@ -26,8 +26,8 @@ public class LearnerFoo implements Learner<Command, ViewState, AppModel> {
         this.teacher = teacher;
         iomap = new TreeMap<CList<Command>, CList<ViewState>>();
         candidateSet = new TreeSet<CList<Command>>();
-        CSet<Command> initialPalette = teacher.getPalette(null);
-        candidateSet.addAll(makeInputs(null, initialPalette));
+        CSet<Command> initialPalette = teacher.getPalette(new CVector());
+        candidateSet.addAll(makeInputs(new CVector(), initialPalette));
     }
 
     private Collection<CList<Command>> makeInputs(CList<Command> prefix, CSet<Command> alphabet) {

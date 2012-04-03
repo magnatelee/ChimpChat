@@ -30,6 +30,9 @@ class MonkeyControlImp implements MonkeyControl {
     private java.io.ObjectOutputStream oos;
     private Socket socket;
 
+    private boolean justRestarted = false;
+
+
     private class ChannelInitiator extends Thread {
         private MonkeyControlImp mMonkey;
         private boolean result = false;
@@ -48,12 +51,12 @@ class MonkeyControlImp implements MonkeyControl {
                 System.out.println("wait");
                 socket = serverSocket.accept();
                 System.out.println("go");
-                serverSocket.close();
 
                 mMonkey.socket = socket;
                 mMonkey.ois = new java.io.ObjectInputStream(socket.getInputStream());
                 mMonkey.oos = new java.io.ObjectOutputStream(socket.getOutputStream());
                 result = true;
+                serverSocket.close();
             } catch (java.io.IOException e) {
                 System.out.println("Exception on new ServerSocket");
             }
@@ -123,6 +126,8 @@ class MonkeyControlImp implements MonkeyControl {
             return false;
         }
 
+        justRestarted = true;
+
         System.out.println("Application Initiated");
         return true;
         //NOTE: At this moment, we expect application to erase all user data when ever it starts.
@@ -131,6 +136,14 @@ class MonkeyControlImp implements MonkeyControl {
     }
 
     public boolean restartApp() {
+        if(justRestarted) return true;
+
+        try{
+            Packet packet = Packet.getReset();
+            oos.writeObject(packet);
+        }
+        catch(Exception e){}
+
         return initiateApp();
         //TODO: redesign protocol to include separate restart packet!
     }
@@ -178,6 +191,7 @@ class MonkeyControlImp implements MonkeyControl {
     }
 
     public boolean go(Command c) {
+        justRestarted = false;
         //0. Assume application is waiting for command
         try {
             //1.1 Send command through ChimpChat.
